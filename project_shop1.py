@@ -4,6 +4,25 @@ from flask import Flask, render_template, redirect, \
     request, url_for, Request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import InvalidRequestError
+from pyowm import OWM
+from pyowm.utils import config
+from pyowm.utils import timestamps
+from pyowm.utils.config import get_default_config
+
+config_dict = get_default_config()
+config_dict['language'] = 'ru'
+place = 'Новомосковск'
+country = 'Россия'
+country_and_place = place + ', ' + country
+owm = OWM('6ad77984bcc00a4708c203e3517e7352')
+mgr = owm.weather_manager()
+observation = mgr.weather_at_place(country_and_place)
+w = observation.weather
+
+status = w.detailed_status
+w.wind()
+humidity = w.humidity
+temp = w.temperature('celsius')['temp']
 
 request: Request
 
@@ -114,9 +133,9 @@ def account():
 @app.route('/about')  # Переход в раздел "Контакты"
 def about():
     if len(user) > 0:
-        return render_template('about.html', name=user[0])
+        return render_template('about.html', name=user[0], temper=str(round(int(temp))))
     else:
-        return render_template('about.html', name='---')
+        return render_template('about.html', name='---', temper=str(round(int(temp))))
 
 
 @app.route('/reg', methods=['POST'])  # Регистрация нового пользователя
